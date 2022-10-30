@@ -1,4 +1,3 @@
-import json
 from django.shortcuts import render
 from django.http import JsonResponse
 #dj rest
@@ -48,7 +47,7 @@ def getRoutes(request):
 
 @api_view(['GET'])
 def getNotes(request):
-    notes=Note.objects.all()
+    notes=Note.objects.all().order_by('-updated')
     serializer=NoteSerializer(notes,many=True) 
     #many =T for multiple objects and F for single object
     return Response(serializer.data)
@@ -61,3 +60,34 @@ def getNote(request,note_id):
         return Response('404')
     serializer=NoteSerializer(note,many=False)
     return Response(serializer.data)
+
+@api_view(['PUT'])
+def updateNote(request,note_id):
+    data=request.data
+    note=Note.objects.get(id=note_id)
+    serialiser=NoteSerializer(instance=note,data=data)
+
+    if(serialiser.is_valid()):
+        serialiser.save()
+
+    return Response(serialiser.data)
+
+@api_view(['DELETE'])
+def deleteNote(request,note_id):
+    note=Note.objects.get(id=note_id)
+    note.delete()
+    return Response('Note deleted')
+
+@api_view(['POST'])
+def createNote(request):
+    data=request.data
+    note=Note.objects.create(body=data['body'],title="") 
+    try:
+        note.title=data['title']
+    except:
+        note.title=" "
+    serialiser=NoteSerializer(note,many=False)
+    if(serialiser.is_valid()):
+        serialiser.save()
+    return Response(serialiser.data)
+    
