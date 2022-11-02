@@ -81,12 +81,14 @@ def deleteNote(request,note_id):
 @api_view(['POST'])
 def createNote(request):
     data=request.data
-    note=Note.objects.create(body=data['body'],title="") 
+    note=Note.objects.create(body=data['body'])
     try:
         note.title=data['title']
     except:
-        note.title=" "
-    serialiser=NoteSerializer(note,many=False)
+        note.title="__none__"
+        print("no title---------------------------------------",note)
+
+    serialiser=NoteSerializer(data=note,many=False)
     if(serialiser.is_valid()):
         serialiser.save()
     return Response(serialiser.data)
